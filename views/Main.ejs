@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="Main.css" />
+        <link rel="stylesheet" href="help.css" />
+        <link rel="stylesheet" href="Explanation.css" />
+        <link rel="stylesheet" href="Subway.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" />
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDsmoFLqupsLIZtJGrerrEuNkrnW_8NnCI&libraries=places"></script>
+        <title>SKHU ROAD</title>
+    </head>
+    <body>
+        <section class="menu" style="z-index: 1">
+            <div class="folding-btn">
+                <div></div>
+            </div>
+            <header class="header-bar">
+                { SKHU ROAD }
+                <div class="header-hr"></div>
+            </header>
+            <nav class="con-nav">
+                <div class="nav-opt on" id="gotoMappingBtn">
+                    <table>
+                        <td>
+                            <img class="opt-icon" src="opticon1.svg" />
+                        </td>
+                    </table>
+                    <br />
+                    길찾기
+                </div>
+                <div class="nav-opt" id="gotoHalfWayBtn">
+                    <table>
+                        <td>
+                            <img class="opt-icon" src="opticon2.svg" />
+                        </td>
+                    </table>
+                    <br />
+                    중간지점
+                </div>
+                <div class="nav-opt" id="gotoSubwayBtn">
+                    <table>
+                        <td>
+                            <img class="opt-icon" src="opticon4.svg" />
+                        </td>
+                    </table>
+                    <br />
+                    지하철
+                </div>
+                <table class="con-oth">
+                    <tr>
+                        <td>
+                            <div class="nav-opt-other">i</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="nav-opt-other" id="helpBtn">?</div>
+                        </td>
+                    </tr>
+                </table>
+            </nav>
+
+            <div class="mapping-section"><%- include('./__Mapping') %></div>
+            <div class="halfway-section hidden"><%- include('./__Halfway') %></div>
+            <div class="subway-section hidden"><%- include('./__Subway') %></div>
+        </section>
+        <%- include('./__Info') %> <%- include('./__Explanation') %>
+        <div id="map" style="z-index: 0"></div>
+    </body>
+    <div class="tg" id="imageContainer" style="display: none; z-index: 0">
+        <img src="smap_sg_all.png" id="image-display" class="photo" />
+    </div>
+
+    <script src="Main.js"></script>
+</html>
