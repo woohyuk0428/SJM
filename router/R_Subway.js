@@ -5,18 +5,8 @@ const fs = require("fs"); // fs 모듈
 const jsonFile = require("jsonfile");
 const requestIp = require("request-ip");
 const reverse = jsonFile.readFileSync("./static/json/line_reverse.json");
-const key = fs.readFileSync("./APIKey.txt");
-const axios = requrie("axios");
+const key = fs.readFileSync("api/APIKey.txt");
 let localhost_url = `localhost:8080`;
-
-
-let r_railOprIsttCd = jsonFile.readFileSync("./static/json/railOprIsttCd.json");
-let railOprIsttCd = r_railOprIsttCd[s_line][arvlMsg3];
-let r_InCd = jsonFile.readFileSync("./static/json/lnCd.json");
-let InCd = r_InCd[s_line][arvlMsg3];
-let r_stinCd = jsonFile.readFileSync("./static/json/stinCd.json");
-let stinCd = r_stinCd[s_line][arvlMsg3];
-
 
 //요일 구분해주는 function
 function getDayOfWeek() {
@@ -25,7 +15,6 @@ function getDayOfWeek() {
 
     let data = dayOfWeek === 6 || dayOfWeek === 0 ? "9" : "8";
     return data;
-
 }
 function seoul_arrive_api(s_response, s_updnline, s_line) {
     const encodedStationName = encodeURI(s_response);
@@ -37,9 +26,9 @@ function seoul_arrive_api(s_response, s_updnline, s_line) {
     request(
         {
             url: realarrive_url,
-            method: "get"
-        }
-        , function (err, res, body) {
+            method: "get",
+        },
+        function (err, res, body) {
             const obj = JSON.parse(body);
             if (obj.status != "500") {
                 const s_data = obj.realtimeArrivalList; // 필요한 데이터 경로 압축
@@ -63,35 +52,42 @@ function seoul_arrive_api(s_response, s_updnline, s_line) {
                     let btrainNo = data1.btrainNo;
                     const arvlMsg2 = data1.arvlMsg2;
                     const arvlCd = data1.arvlCd;
-                    
-                    const processData ={
-                        subwayId : subwayId,
-                        arvlMsg3 : arvlMsg3,
-                        recptnDt : recptnDt,
-                        bstatnNm : bstatnNm,
-                        updnLine : updnLine,
-                        trainLineNm : trainLineNm,
-                        btrainNo : btrainNo,
-                        arvlMsg2 : arvlMsg2,
-                        arvlCd : arvlCd,
-                    }
+
+                    const processData = {
+                        subwayId: subwayId,
+                        arvlMsg3: arvlMsg3,
+                        recptnDt: recptnDt,
+                        bstatnNm: bstatnNm,
+                        updnLine: updnLine,
+                        trainLineNm: trainLineNm,
+                        btrainNo: btrainNo,
+                        arvlMsg2: arvlMsg2,
+                        arvlCd: arvlCd,
+                    };
                     subwayJson.body.push(processData);
                 });
                 console.log(subwayJson);
-                
             }
         }
-    )
+    );
     return subwayJson;
 }
 // http://localhost:8080/post - post라우팅
 router.post("/", (req, res_router) => {
-    console.log(`${new Date}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`);
+    console.log(`${new Date()}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`);
     console.log("실행");
     console.log(req.body);
+
     var s_response = req.body.response; // XSS 공격 방어
     var s_updnline = req.body.updnLine; //상행 하행 구별
     var s_line = req.body.subwayLine; //노선 받는 변수
+
+    let r_railOprIsttCd = jsonFile.readFileSync("./static/json/railOprIsttCd.json");
+    let railOprIsttCd = r_railOprIsttCd[s_line][arvlMsg3];
+    let r_InCd = jsonFile.readFileSync("./static/json/lnCd.json");
+    let InCd = r_InCd[s_line][arvlMsg3];
+    let r_stinCd = jsonFile.readFileSync("./static/json/stinCd.json");
+    let stinCd = r_stinCd[s_line][arvlMsg3];
     console.log(`${s_response}역\n 호선 : ${s_line}\n 상행 하행${s_updnline}`);
     const line = jsonFile.readFileSync(`./static/json/Line/${s_line}.json`);
     const rapid_line = jsonFile.readFileSync(`./static/json/Line/1호선_급행.json`);
@@ -126,7 +122,6 @@ router.post("/", (req, res_router) => {
     const subwayJson = { Status: 200, body: [] };
 
     if (line[s_response] === s_line) {
-
         request(
             {
                 url: realarrive_url,
@@ -267,16 +262,11 @@ router.post("/", (req, res_router) => {
                                                             processData.Position = `${statnNm}역 전역출발 (특급) (막차)`;
                                                         } else if (statnTnm === s_response) {
                                                             processData.Position = `${s_response}역 출발 대기중`;
-
-                                                        }
-                                                        else if (statnNm === s_response) {
+                                                        } else if (statnNm === s_response) {
                                                             processData.Position = `${s_response}역 출발 대기중`;
-
-                                                        }
-                                                        else if (statnNm === s_response && trainSttus === "2" && directAt === "0" && lstcarAt === "0") {
+                                                        } else if (statnNm === s_response && trainSttus === "2" && directAt === "0" && lstcarAt === "0") {
                                                             processData.Position = `${s_response}역 출발`;
                                                         }
-
 
                                                         //subwayData[subwayId].push(processData);
                                                     }
@@ -396,10 +386,8 @@ router.post("/", (req, res_router) => {
                                                                                 }
                                                                                 processData.btrainNo = data2.trnNo;
                                                                                 processData.delayInfo = delayInfo;
-
                                                                             }
-                                                                        }
-                                                                        else if (data2.dptTm != null && data2.arvTm == null) {
+                                                                        } else if (data2.dptTm != null && data2.arvTm == null) {
                                                                             var train_no = data2.trnNo;
                                                                             if (
                                                                                 s_line == "1호선" ||
@@ -460,23 +448,23 @@ router.post("/", (req, res_router) => {
                                                                                         let secondsDelayed = Math.floor((timeDiff % (1000 * 60)) / 1000);
                                                                                         var delayInfo = `${data2.trnNo} ${bstatnNm}행 열차 ${minuesDelayed} 분 ${secondsDelayed}초 지연 출발`;
                                                                                     }
-                                                                                }
-                                                                                else {
+                                                                                } else {
                                                                                     var delayInfo = `${data2.trnNo} ${bstatnNm}행 열차 출발 예정`;
-
                                                                                 }
                                                                                 processData.btrainNo = data2.trnNo;
                                                                                 processData.delayInfo = delayInfo;
-
                                                                             }
                                                                         }
-
                                                                     });
                                                                     subwayJson.body.push(processData);
-                                                                    console.log(`${processData.subwayId} ${s_response}역 실시간 알림이!\n${processData.trainLineNm}: ${processData.arvlMsg2}\n열차번호: ${processData.btrainNo}\n환승정보: ${processData.subwayList}\n지연정보: ${processData.delayInfo}`);
+                                                                    console.log(
+                                                                        `${processData.subwayId} ${s_response}역 실시간 알림이!\n${processData.trainLineNm}: ${processData.arvlMsg2}\n열차번호: ${processData.btrainNo}\n환승정보: ${processData.subwayList}\n지연정보: ${processData.delayInfo}`
+                                                                    );
                                                                     j++;
                                                                     if (j === i_len.length) {
-                                                                        console.log(`${new Date}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`);
+                                                                        console.log(
+                                                                            `${new Date()}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`
+                                                                        );
                                                                         res_router.json(subwayJson);
                                                                     }
                                                                 } catch (e) {
@@ -503,10 +491,9 @@ router.post("/", (req, res_router) => {
                             }
                         });
                     } else {
-                        console.log(`${new Date}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`);
+                        console.log(`${new Date()}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`);
                         console.log("운행종료");
-                        res_router.json(subwayJson.Status = 500);
-
+                        res_router.json((subwayJson.Status = 500));
                     }
                     //결과 반환
                 } catch (error) {
@@ -515,9 +502,9 @@ router.post("/", (req, res_router) => {
             }
         );
     } else {
-        console.log(`${new Date}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`);
+        console.log(`${new Date()}\n접속한 클라이언트의 IP : ${requestIp.getClientIp(req).substring(7)}`);
         console.log(`${s_line}의 ${s_response}역은 없습니다. 다시 검색해주세요.`);
-        res_router.json(subwayJson.Status = 400);
+        res_router.json((subwayJson.Status = 400));
         // res_router.render("/Subway", {
         //     result_Data: `${s_line}의 ${s_response}역은 없습니다. 다시 검색해주세요.`,
         // });
