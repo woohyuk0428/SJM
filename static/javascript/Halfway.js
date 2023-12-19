@@ -1,9 +1,8 @@
-const inputContainer = document.querySelector(".way-list"); // input이 들어갈 컨테이너 위치
-import fs from "fs";
-let localhost_url = fs.readFileSync("./url.txt");
-// const addressFunctions = new InputAddressFunctions(inputContainer);
-
 document.addEventListener("DOMContentLoaded", function () {
+    let localhost_url = "http://localhost:8080";
+    // let localhost_url = "www.skhuroad.com";
+    const inputContainer = document.querySelector(".way-list"); // input이 들어갈 컨테이너 위치
+
     //! ------------------------------- 주소 입력 필드 관련 이벤트 ---------------------------------------
     const addressInputs = document.querySelectorAll('input[name="address"]'); // 주소 입력폼
     activateRemoveButtons(); // 기존 삭제 버튼 활성화
@@ -202,7 +201,8 @@ function HalfwaySearch(marker_iconList, midData) {
     const addressInputs = document.querySelectorAll(".post_input_data"); // 인풋폼 저장
     const inputValues = [...addressInputs].map((input) => input.value); // 주소값 저장
     console.log(inputValues);
-    const url = localhost_url+"/halfway"; // ajax요청 url
+    const url = localhost_url + "/halfway"; // ajax요청 url
+    console.log(url);
     let sendData = "";
 
     // 출발지점이 2개 이상인지 검사

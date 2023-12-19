@@ -1,9 +1,5 @@
-// const addressFunctions = new InputAddressFunctions(inputContainer);
-
-// const rangeSlider = document.getElementById("rangeSlider"); // 슬라이더 위치
-// const sliderValue = document.getElementById("sliderValue"); // 슬라이더 값을 표시할 위치
-import fs from "fs";
-let localhost_url = fs.readFileSync("./url.txt");
+let localhost_url = "http://localhost:8080";
+// let localhost_url = "www.skhuroad.com";
 
 const marker_iconList = CreateIcon(); // 아이콘을 리스트에 저장
 let placeMarkers = []; // 동적으로 생성한 마커들을 저장할 배열
@@ -252,7 +248,7 @@ function MappingSearch(marker_iconList, Mydata) {
 
     // const rangeValue = 300;
     const inputValues = document.querySelector('input[name="address"]').value; // 인풋폼 저장
-    const M_url = localhost_url+"/Mapping/data"; // ajax요청 url
+    const M_url = localhost_url + "/Mapping/data"; // ajax요청 url
     let sendData = "";
 
     // 서버로 AJAX 요청을 보내기 위한 작업

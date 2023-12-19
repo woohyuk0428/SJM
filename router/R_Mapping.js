@@ -1,13 +1,11 @@
-let recentSearches = [];
-
 const nodeGeocoder = require("node-geocoder");
 const axios = require("axios");
-
 const express = require("express"); // express 프레임워크
-const requestIp =require("request-ip");
-
+const requestIp = require("request-ip");
 const router = express.Router();
-const apiKey = "AIzaSyDsmoFLqupsLIZtJGrerrEuNkrnW_8NnCI";
+
+const fs = require("fs");
+const apiKey = fs.readFileSync("./api/googleAPI.txt");
 const geocoder = nodeGeocoder({
     provider: "google",
     apiKey: apiKey,

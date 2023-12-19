@@ -73,4 +73,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
     console.log(`${today} | server reload`);
     console.log(`success open https://www.skhuroad.com`);
+    console.log(`success open http://localhost:8080`);
 });

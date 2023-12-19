@@ -3,7 +3,9 @@ const axios = require("axios");
 const express = require("express");
 const requestIp = require("request-ip");
 const router = express.Router();
-const apiKey = "AIzaSyDsmoFLqupsLIZtJGrerrEuNkrnW_8NnCI";
+
+const fs = require("fs");
+const apiKey = fs.readFileSync("./api/googleAPI.txt");
 const geocoder = nodeGeocoder({
     provider: "google",
     apiKey: apiKey,
@@ -46,58 +48,58 @@ router.post("/", async (req, res) => {
     let mid_point_lng = 0;
     let count = 0;
     let plc_len = 0;
-    do {
-        console.log(count);
-        const plc = jsonData.midplaces;
+    // do {
+    console.log(count);
+    const plc = jsonData.midplaces;
 
-        if ((count - 1) % 5 == 0 && count != 1) {
-            // console.log("중간지점 초기화 진행");
-            jsonData.midpoint.address.lat = mid_point_lat;
-            jsonData.midpoint.address.lng = mid_point_lng;
-        }
+    // if ((count - 1) % 5 == 0 && count != 1) {
+    //     // console.log("중간지점 초기화 진행");
+    //     jsonData.midpoint.address.lat = mid_point_lat;
+    //     jsonData.midpoint.address.lng = mid_point_lng;
+    // }
 
-        if (count <= 2 && count != 0) {
-            jsonData.midpoint.address.lat += 0.025;
-            jsonData.midpoint.address.lng += 0.025;
-            // console.log("1.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
-        } else if (count <= 4 && count > 2) {
-            jsonData.midpoint.address.lat += 0.025;
-            jsonData.midpoint.address.lng -= 0.025;
-            // console.log("2.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
-        } else if (count <= 6 && count > 4) {
-            jsonData.midpoint.address.lat -= 0.025;
-            jsonData.midpoint.address.lng -= 0.025;
-            // console.log("3.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
-        } else if (count <= 8 && count > 6) {
-            jsonData.midpoint.address.lat -= 0.025;
-            jsonData.midpoint.address.lng += 0.025;
-            // console.log("4.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
-        }
+    // if (count <= 2 && count != 0) {
+    //     jsonData.midpoint.address.lat += 0.025;
+    //     jsonData.midpoint.address.lng += 0.025;
+    //     // console.log("1.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
+    // } else if (count <= 4 && count > 2) {
+    //     jsonData.midpoint.address.lat += 0.025;
+    //     jsonData.midpoint.address.lng -= 0.025;
+    //     // console.log("2.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
+    // } else if (count <= 6 && count > 4) {
+    //     jsonData.midpoint.address.lat -= 0.025;
+    //     jsonData.midpoint.address.lng -= 0.025;
+    //     // console.log("3.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
+    // } else if (count <= 8 && count > 6) {
+    //     jsonData.midpoint.address.lat -= 0.025;
+    //     jsonData.midpoint.address.lng += 0.025;
+    //     // console.log("4.", jsonData.midpoint.address.lat, jsonData.midpoint.address.lng);
+    // }
 
-        if (count > 8) {
-            // console.log("중간지점 못찾음");
-            break;
-        }
+    // if (count > 8) {
+    //     // console.log("중간지점 못찾음");
+    //     break;
+    // }
 
-        const midname = await geocoder.reverse({ lat: midpoint.lat, lon: midpoint.lng }); // 중간지점의 위도 경도를 실제 주소로 변환
-        jsonData.midpoint = {
-            name: midname[0].formattedAddress,
-            address: midpoint,
-        };
+    const midname = await geocoder.reverse({ lat: midpoint.lat, lon: midpoint.lng }); // 중간지점의 위도 경도를 실제 주소로 변환
+    jsonData.midpoint = {
+        name: midname[0].formattedAddress,
+        address: midpoint,
+    };
 
-        if (count == 0) {
-            // console.log("중간지점 저장");
-            mid_point_lat = jsonData.midpoint.address.lat;
-            mid_point_lng = jsonData.midpoint.address.lng;
-        }
+    // if (count == 0) {
+    //     // console.log("중간지점 저장");
+    //     mid_point_lat = jsonData.midpoint.address.lat;
+    //     mid_point_lng = jsonData.midpoint.address.lng;
+    // }
 
-        jsonData = await PlaceSearch(jsonData, data.range, midpoint); // 중간지점의 근처 장소를 찾아 jsonData에 저장
-        for (const key in plc) {
-            plc_len += plc[key].length;
-        }
+    jsonData = await PlaceSearch(jsonData, data.range, midpoint); // 중간지점의 근처 장소를 찾아 jsonData에 저장
+    for (const key in plc) {
+        plc_len += plc[key].length;
+    }
 
-        count++;
-    } while (plc_len == 0);
+    //     count++;
+    // } while (plc_len == 0);
 
     res.json(jsonData);
 });
