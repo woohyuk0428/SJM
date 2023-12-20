@@ -15,6 +15,7 @@ searchInput.addEventListener("keypress", function (e) {
         e.preventDefault();
 
         MappingSearch(marker_iconList, Mydata);
+        W;
     }
 });
 
