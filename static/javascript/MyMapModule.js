@@ -1,10 +1,9 @@
 class MyMap {
-    constructor(gMap) {
-        // 생성자 내부에서 해당 변수 초기화
-        this.gMap = gMap;
-        this.iconList = ["start", "mid", "cafe", "convenience_store", "library", "bus_station", "subway_station", "restaurant"];
+    constructor(gMap, iconList, host_url) {
+        this.gMap = gMap; // 구글맵 객체
+        this.marker_iconList = iconList; // 아이콘 이미지 리스트
+        this.localhost_url = host_url; // 서버 호스트 앞 주소
         this.placetypes = ["cafe", "convenience_store", "library", "bus_station", "subway_station", "restaurant"];
-        this.localhost_url = "http://localhost:8080";
     }
 
     // 경로설정 시 경로 랜덤 색 추출
@@ -22,20 +21,6 @@ class MyMap {
         return `#${r}${g}${b}`;
     }
 
-    // 각 지점별 마커 아이콘 생성
-    CreateIcon() {
-        var isIconList = {};
-
-        this.iconList.forEach((data) => {
-            const icon = {
-                url: `${data}_icon.png`,
-                scaledSize: new google.maps.Size(40, 40), // 이미지 크기 조정
-            };
-            isIconList[data] = icon;
-        });
-        return isIconList;
-    }
-
     // 장소추천 별점 생성
     updateStars(rating) {
         let contents = "";
@@ -46,15 +31,17 @@ class MyMap {
     }
 
     // 마커 동적 생성
-    createMarker(position, title, icon, tags) {
+    createMarker(position, title, icon, tags, data) {
         const markerOptions = {
             position: position,
-            map: this.gMapmap,
+            map: this.gMap,
             title: title,
             icon: icon,
             tags: tags,
-            data: false,
         };
+        if (data) {
+            markerOptions["data"] = data;
+        }
 
         return new google.maps.Marker(markerOptions);
     }
@@ -79,7 +66,7 @@ class MyMap {
     }
 
     // 대표 사진을 가져오는 함수
-    async H_fetchPlacePhoto(placeId) {
+    async fetchPlacePhoto(placeId) {
         const parser = new DOMParser();
 
         const place_image_html = await fetch(`${this.localhost_url}/Suggestion/PlacePhoto?placeId=${placeId}`);

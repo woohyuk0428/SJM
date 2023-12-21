@@ -1,232 +1,86 @@
-let localhost_url = "http://localhost:8080";
-// let localhost_url = "www.skhuroad.com";
-
-const marker_iconList = CreateIcon(); // 아이콘을 리스트에 저장
-let placeMarkers = []; // 동적으로 생성한 마커들을 저장할 배열
-let responseData_place; // 근처 장소들에 대한 json데이터를 저장
-let Mydata = { lat: 37.4877347563341, lng: 126.82516487456813 };
-console.log(Mydata);
-
-// enter키 누를 때 버튼 클릭 처리
-searchInput = document.getElementById("textInput");
-
-searchInput.addEventListener("keypress", function (e) {
-    if (e.key === "Enter") {
-        e.preventDefault();
-
-        MappingSearch(marker_iconList, Mydata);
-        W;
+class MappingMap extends MyMap {
+    constructor(gMap, iconList, host_url) {
+        super(gMap, iconList, host_url);
     }
-});
 
-//! ------------------------------- 지도 초기화 ---------------------------------------
+    // 도착지점 마커 생성
+    createEndMarkers(responseData, endpoint, midcontent) {
+        const midcontent_name = `
+            <div class="m_end">도착지점</div>
+            <h2 class="m_title">${responseData.endpoint[0].name}</h2><hr>`;
 
-navigator.geolocation.getCurrentPosition(
-    (position) => {
-        Mydata = { lat: position.coords.latitude, lng: position.coords.longitude };
-
-        M_CreateMap(Mydata);
-        console.log(Mydata);
-    },
-    (error) => {}
-);
-
-document.addEventListener("DOMContentLoaded", function () {
-    //! ------------------------------- 주소 입력 필드 관련 이벤트 ---------------------------------------
-    const addressInputs = document.querySelectorAll('input[name="address"]'); // 주소 입력폼
-
-    // 모든 input 요소에 주소 자동 완성 기능 활성화
-    addressInputs.forEach(function (input) {
-        new google.maps.places.Autocomplete(input);
-    });
-
-    //! ------------------------------- 상단 필터 관련 이벤트 ---------------------------------------
-    const resetButton = document.querySelector(".reset-button"); // 초기화 버튼
-
-    // 이미지 클릭 시 입력 내용 삭제 함수
-    function deleteInputText() {
-        var inputElement = document.getElementById("textInput");
-        inputElement.value = "";
-    }
-    // 이미지를 클릭할 때 deleteInputText 함수 호출
-    var imageElement = document.getElementById("reset-button");
-    imageElement.addEventListener("click", deleteInputText);
-
-    const radioLabels = document.querySelectorAll(".radio-label input[type='radio']"); // 주변 장소 필터버튼 선택
-
-    // resetButton.addEventListener("click", () => {
-    //     resetRadioSelection(radioLabels);
-    // }); // 초기화 버튼 실행
-
-    // 라디오 버튼들에 대해 클릭 이벤트 리스너 추가
-    radioLabels.forEach((radio) => {
-        radio.addEventListener("click", handleRadioClick);
-    });
-
-    // 슬라이더 값 변경
-    // rangeSlider.addEventListener("input", function () {
-    //     sliderValue.textContent = `${rangeSlider.value}미터`;
-    // });
-
-    //! ------------------------------- 경로 정보 삭제 관련 이벤트 ---------------------------------------
-    const AdrOffBtn = document.getElementById("addressInfoOff"); // 경로 정보 끄기 버튼
-    const AdrOnBtn = document.getElementById("addressInfoOn"); // 경로 정보 표시 버튼
-
-    // // 경로 정보 끄기
-    // AdrOffBtn.addEventListener("click", () => {
-    //     AdrInfo_OnOff("off");
-    // });
-
-    // // 경로 정보 표시
-    // AdrOnBtn.addEventListener("click", () => {
-    //     AdrInfo_OnOff("on");
-    // });
-
-    //! ------------------------------- 중간지점 찾기 관련 이벤트 ---------------------------------------
-    // 중간지점 찾기 버튼을 누를 시 실행
-    const Btn = document.getElementById("btn"); // 중간지점 찾기 버튼
-    // 중간지점 찾기 버튼 클릭 시 실행되는 핸들러
-    Btn.addEventListener("click", () => {
-        MappingSearch(marker_iconList, Mydata);
-    });
-});
-
-//! ------------------------------- 지도 초기화 ---------------------------------------
-function M_CreateMap(address) {
-    map = new google.maps.Map(document.getElementById("map"), {
-        center: address, // 초기 위치 설정
-        zoom: 14, // 확대/축소 레벨
-    });
-
-    infoWindow = new google.maps.InfoWindow();
-
-    marker = new google.maps.Marker({
-        map: map,
-        position: address,
-        title: "현재위치",
-    });
-
-    // 마커를 클릭했을 때 정보창 열기
-    marker.addListener("click", function () {
-        getAddress(address, function (address) {
-            infoWindow.setContent("현재 주소: " + address);
-            infoWindow.open(map, marker);
+        const markerEnd = new google.maps.Marker({
+            position: endpoint,
+            map: this.gMap,
+            title: responseData.endpoint[0].name,
+            icon: this.marker_iconList.mid,
+            tags: "end",
         });
-    });
 
-    return map;
-}
+        const infoWindowEnd = new google.maps.InfoWindow();
 
-// 경위도 좌표를 주소로 변환하는 함수
-function getAddress(latlng, callback) {
-    var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ location: latlng }, function (results, status) {
-        if (status === "OK") {
-            if (results[0]) {
-                callback(results[0].formatted_address);
-            } else {
-                callback("주소를 찾을 수 없습니다.");
+        markerEnd.addListener("click", () => {
+            infoWindowEnd.setContent(midcontent_name + midcontent);
+            infoWindowEnd.open(this.gMap, markerEnd);
+        });
+    }
+
+    // 도착지점 근처 장소 마커 생성 함수
+    async createPlaceMarkers(responseData, iconList) {
+        const placeMarkers = []; // 동적으로 생성된 마커가 들어갈 배열
+        const fetchPhoto = this.fetchPlacePhoto.bind(this); // fetchPlacePhoto를 미리 가져오기
+
+        for (const placename of this.placetypes) {
+            for (const placeinfo of responseData.places[placename]) {
+                const contentsName = `<h1 class="place_name">${placeinfo.name}</h1>`;
+                let contentsMaintext = `
+                    <hr>
+                    <ul class="place_ul"><li>주소: ${placeinfo.vicinity}</li>
+                    <li>평점: <div class="stars" id="stars">${this.updateStars(placeinfo.rating)}</div></li></ul>`;
+
+                const P_marker = this.createMarker(placeinfo.address, placeinfo.name, iconList[placename], placename, {
+                    get_image: false,
+                }); // 마커 생성
+
+                const P_infoWindow = new google.maps.InfoWindow({
+                    content: contentsName + contentsMaintext,
+                });
+
+                P_marker.addListener("click", async function () {
+                    const self = this; // this를 저장
+
+                    if (self.data.get_image) {
+                        P_infoWindow.open(self, P_marker);
+                        // 버튼 요소들을 선택
+                    } else {
+                        new Promise(async function (resolve, reject) {
+                            try {
+                                const photoUrl = await fetchPhoto(placeinfo.name);
+
+                                P_infoWindow.setContent(contentsName + photoUrl + contentsMaintext);
+                                P_infoWindow.open(self.gMap, P_marker);
+                                self.data.get_image = true; // 저장한 this 사용
+                                resolve();
+                            } catch (error) {
+                                reject(error);
+                            }
+                        });
+                    }
+                });
+
+                P_marker.setVisible(false); // 생성한 마커를 숨겨둠
+                placeMarkers.push(P_marker);
             }
-        } else {
-            callback("주소 변환에 실패했습니다. 상태: " + status);
         }
-    });
-}
 
-//본인 위치의 위도 경도 구하는 함수
-// function sendLocation(latitude, longitude) {
-//     return fetch("/mapping", {
-//         method: "POST",
-//         headers: {
-//             "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ latitude, longitude }),
-//     })
-//         .then((response) => response.json())
-//         .then((data) => {
-//             return data;
-//         })
-//         .catch((error) => {
-//             console.error("Error fetching data:", error);
-//         });
-// }
-
-//! ------------------------------- 주소 입력 필드 관련 함수 ---------------------------------------
-// 주소 자동 완성 기능 활성화
-function activateAutoAddress() {
-    const addressInputs = document.querySelectorAll('input[name="address"]');
-    new google.maps.places.Autocomplete(addressInputs[addressInputs.length - 1]);
-}
-
-//! ------------------------------- 상단 필터 관련 함수 ---------------------------------------
-// 버튼 선택을 초기화하는 함수
-function resetRadioSelection(radioLabels) {
-    // 모든 버튼 선택 해제
-    console.log(radioLabels);
-    radioLabels.forEach((radio) => {
-        radio.checked = false;
-    });
-    // 주변 장소 마커들을 안보이게 함
-    placeMarkers.forEach((marker) => {
-        marker.setVisible(false);
-    });
-    // 라벨에서 선택된 클래스 제거
-    removeSelectedClassFromLabels();
-}
-
-// 라디오 버튼 클릭 이벤트를 처리하는 함수
-function handleRadioClick(event) {
-    if (event.target.tagName === "INPUT" && event.target.type === "radio") {
-        const selectedValue = this.value;
-        console.log(selectedValue);
-        removeSelectedClassFromLabels(); // 선택된 버튼 제거
-        this.closest(".radio-label").classList.add("selected"); // 누른 버튼에 클래스 추가
-
-        responseData_place[selectedValue].length === 0 ? alert(`주변에 ${selectedValue}이(가) 없습니다.`) : null; // 해당하는 정보가 없을 경우 실행
-
-        // 마커의 태그에 선택한 값이 포함되어 있으면 보이게 설정
-        placeMarkers.forEach((marker) => {
-            marker.setVisible(marker.tags.includes(selectedValue));
-        });
+        return placeMarkers;
     }
 }
 
-// 버튼 클래스 중 "selected"를 제거하는 함수 (선택된 버튼 초기화)
-function removeSelectedClassFromLabels() {
-    document.querySelectorAll(".radio-label").forEach((label) => {
-        label.classList.remove("selected");
-    });
-}
-
-//! ------------------------------- 경로 정보 삭제 관련 함수 ---------------------------------------
-// 경로 정보가 들어있는 요소를 찾아 on off를 해주는 함수
-function AdrInfo_OnOff(onoff) {
-    var Ladr = document.querySelectorAll('img[src="https://maps.gstatic.com/mapfiles/tiph.png"]');
-    var Radr = document.querySelectorAll('img[src="https://maps.gstatic.com/mapfiles/tip.png"]');
-
-    if (onoff == "on") {
-        AdrInfoFor(Ladr, "block");
-        AdrInfoFor(Radr, "block");
-    } else {
-        AdrInfoFor(Ladr, "none");
-        AdrInfoFor(Radr, "none");
-    }
-}
-
-// 가져온 이미지 정보의 부모요소에 display를 수정하는 함수
-function AdrInfoFor(adrs, displayInfo) {
-    adrs.forEach(function (adr) {
-        if (adr.parentNode && adr.parentNode.tagName === "DIV") {
-            adr.parentNode.style.display = displayInfo;
-        }
-    });
-}
-
+//! ------------------------------- 길찾기 관련 함수 ---------------------------------------
 let save_queue = [];
-//! ------------------------------- 중간지점 찾기 관련 함수 ---------------------------------------
 // 중간지점 버튼 클릭 시 실행되는 함수
 function MappingSearch(marker_iconList, Mydata) {
-    console.log("실행");
     //---------------------------------------------
     let form_control = document.getElementById("textInput").value;
     let ulElement = document.createElement("ol");
@@ -292,8 +146,10 @@ function MappingSearch(marker_iconList, Mydata) {
             const directionsService = new google.maps.DirectionsService(); // 길찾기 서비스 인스턴스 생성
             const endpoint = responseData.endpoint[0].address; // 중간지점 위치
             const map = CreateMap(endpoint); // 지도 초기화
+            let mMap = new MappingMap(map, marker_iconList, localhost_url);
+
             responseData_place = responseData.places; // 중간지점 근처 장소 데이터 전역변수에 저장
-            placeMarkers = await M_createPlaceMarkers(map, responseData, marker_iconList);
+            placeMarkers = await mMap.createPlaceMarkers(responseData, marker_iconList);
 
             // 길찾기 인스턴스 설정
             new google.maps.DirectionsRenderer({
@@ -306,8 +162,8 @@ function MappingSearch(marker_iconList, Mydata) {
 
                 const markerPromises = dynamicMarkers.map(function (markerInfo, index) {
                     return new Promise(function (resolve, reject) {
-                        const colorCode = getRandomColor(); // 경로 랜덤 색깔
-                        const marker = createMarker(markerInfo.position, map, markerInfo.title, markerInfo.icon, markerInfo.tags); // 시작지점 마커 생성
+                        const colorCode = mMap.getRandomColor(); // 경로 랜덤 색깔
+                        const marker = mMap.createMarker(markerInfo.position, markerInfo.title, markerInfo.icon, markerInfo.tags); // 시작지점 마커 생성
 
                         // 길찾기 옵션 설정
                         const request = {
@@ -315,7 +171,7 @@ function MappingSearch(marker_iconList, Mydata) {
                             destination: endpoint,
                             travelMode: google.maps.TravelMode.TRANSIT,
                         };
-                        console.log(request);
+
                         // 길찾기 옵션 설정
                         const directionsRenderer = new google.maps.DirectionsRenderer({
                             map,
@@ -337,7 +193,7 @@ function MappingSearch(marker_iconList, Mydata) {
                                 </ul>`;
                                 midcontent += `<h3 class="adr_title">${markerInfo.title}</h3> ${contents_info} <hr>`; //  MID마커에 표시될 데이터 저장
 
-                                createRoute(contents_info, response, markerInfo, map, marker, directionsRenderer); // 경로 생성
+                                mMap.createRoute(contents_info, response, marker, directionsRenderer); // 경로 생성
                                 resolve(); // 비동기 작업 완료
                             } else {
                                 reject(new Error(markerInfo.title + "에서 중간지점으로 가는 경로를 찾을 수 없습니다: " + status));
@@ -349,7 +205,7 @@ function MappingSearch(marker_iconList, Mydata) {
                 // 모든 비동기 작업이 완료되길 기다림
                 Promise.all(markerPromises)
                     .then(function () {
-                        createEndMarkers(responseData, endpoint, map, marker_iconList, midcontent); // 중간지점 마커 생성
+                        mMap.createEndMarkers(responseData, endpoint, midcontent); // 도착지점 마커 생성
                     })
                     .catch(function (error) {
                         console.error(error);
@@ -360,162 +216,3 @@ function MappingSearch(marker_iconList, Mydata) {
             console.error("fetch 작업 중 문제가 발생했습니다:", error);
         });
 }
-
-// 시작할 때 마커에 들어갈 아이콘을 생성하는 함수
-function CreateIcon() {
-    const iconList = ["start", "mid", "cafe", "convenience_store", "library", "bus_station", "subway_station", "restaurant"];
-    var isIconList = {};
-
-    iconList.forEach((data) => {
-        const icon = {
-            url: `${data}_icon.png`,
-            scaledSize: new google.maps.Size(40, 40), // 이미지 크기 조정
-        };
-        isIconList[data] = icon;
-    });
-    return isIconList;
-}
-
-// 마커를 동적으로 생성할 함수
-function createMarker(position, map, title, icon, tags, data) {
-    const markerOptions = {
-        position: position,
-        map: map,
-        title: title,
-        icon: icon,
-        tags: tags,
-    };
-
-    if (data) {
-        markerOptions["data"] = data;
-    }
-    return new google.maps.Marker(markerOptions);
-}
-
-// 중간지점 근처 장소 마커 생성 함수
-async function M_createPlaceMarkers(map, responseData, iconList) {
-    const placetypes = ["cafe", "convenience_store", "library", "bus_station", "subway_station", "restaurant"]; // 검색할 장소 타입
-    const placeMarkers = []; // 동적으로 생성된 마커가 들어갈 배열
-
-    for (const placename of placetypes) {
-        for (const placeinfo of responseData.places[placename]) {
-            const contentsName = `<h5>${placeinfo.name}</h5><br>`;
-            let contentsMaintext = `
-                <hr><p>주소: ${placeinfo.vicinity}</p>
-                <p>평점: ${placeinfo.rating}</p>`;
-
-            contentsMaintext += placename === "subway_station" ? '<h6><a href="/Post">지하철 정보 검색 페이지로 이동하시겠습니까?</a></h6>' : "";
-
-            const P_marker = createMarker(placeinfo.address, map, placeinfo.name, iconList[placename], placename, { get_image: false }); // 마커 생성
-
-            const P_infoWindow = new google.maps.InfoWindow({
-                content: contentsName + contentsMaintext,
-            });
-
-            P_marker.addListener("click", async function () {
-                const self = this; // this를 저장
-
-                if (self.data.get_image) {
-                    P_infoWindow.open(map, P_marker);
-                    // 버튼 요소들을 선택
-                } else {
-                    new Promise(async function (resolve, reject) {
-                        try {
-                            const photoUrl = await M_fetchPlacePhoto(placeinfo.name);
-
-                            P_infoWindow.setContent(contentsName + photoUrl + contentsMaintext);
-                            P_infoWindow.open(map, P_marker);
-                            self.data.get_image = true; // 저장한 this 사용
-
-                            resolve();
-                        } catch (error) {
-                            reject(error);
-                        }
-                    }).then(() => {
-                        setMidAdrEvent();
-                    });
-                }
-            });
-
-            P_marker.setVisible(false); // 생성한 마커를 숨겨둠
-            placeMarkers.push(P_marker);
-        }
-    }
-
-    return placeMarkers;
-}
-
-// 길찾기 경로 생성 함수
-function createRoute(contents_info, response, markerInfo, map, marker, directionsRenderer) {
-    const infoWindowContent = `
-    <div class="m_start">출발지점</div>
-    <h2 class="m_title">${markerInfo.title}</h2><hr>
-    ${contents_info}
-    `;
-
-    const infoWindow = new google.maps.InfoWindow({
-        content: infoWindowContent,
-    });
-
-    marker.addListener("click", () => {
-        infoWindow.open(map, marker);
-    });
-
-    directionsRenderer.setDirections(response);
-}
-
-// 중간지점 마커 생성 함수
-function createEndMarkers(responseData, endpoint, map, marker_iconList, midcontent) {
-    const midcontent_name = `
-            <div class="m_end">도착지점</div>
-            <h2 class="m_title">${responseData.endpoint[0].name}</h2><hr>`;
-
-    const markerEnd = new google.maps.Marker({
-        position: endpoint,
-        map,
-        title: responseData.endpoint[0].name,
-        icon: marker_iconList.mid,
-        tags: "end",
-    });
-
-    const infoWindowEnd = new google.maps.InfoWindow();
-
-    markerEnd.addListener("click", () => {
-        infoWindowEnd.setContent(midcontent_name + midcontent);
-        infoWindowEnd.open(map, markerEnd);
-    });
-}
-// 대표 사진을 가져오는 함수
-async function M_fetchPlacePhoto(placeId) {
-    const parser = new DOMParser();
-    const place_image_html = await fetch(`${localhost_url}/Mapping/PlacePhoto?placeId=${placeId}`);
-    const image_html = await place_image_html.json();
-
-    let doc = parser.parseFromString(image_html.Html, "text/html");
-    let imageElement = doc.getElementsByClassName("DS1iW")[0];
-
-    if (imageElement) {
-        let imageUrl = imageElement.getAttribute("src");
-        if (imageUrl) {
-            return `<img src="${imageUrl}" alt="대표 사진" width="300">`;
-        } else {
-            alert("검색 결과 이미지를 찾을 수 없습니다.");
-        }
-    } else {
-        alert("검색 결과를 찾을 수 없습니다.");
-    }
-}
-// '지하철' 관련 함수
-// 선택한 호선에 대한 조회 시간을 가져옴
-// var subwayTime = subwayTimeInfo[selectedLine];
-
-// // 결과를 화면에 출력
-// document.getElementById("result").innerHTML = subwayTime;
-
-// 복원 가능하게 남겨 놓았습니다.
-// let contentsMaintext = `
-//                 <hr><p>검색 태그: ${placename} (${placeinfo.index})</p>
-//                 <p>점포 id: ${placeinfo.id}</p>
-//                 <p>주소: ${placeinfo.vicinity}</p>
-//                 <p>태그: ${placeinfo.types}</p>
-//                 <p>평점: ${placeinfo.rating}</p>`;
